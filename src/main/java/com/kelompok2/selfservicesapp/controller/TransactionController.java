@@ -99,6 +99,12 @@ public class TransactionController {
 
         Transactions savedTransaction = transactionsRepository.save(transaction);
 
+        // Set transaksi ke tiap detail & save details satu per satu
+        for (TransactionDetails detail : detailsList) {
+            detail.setTransaction(savedTransaction);
+        }
+        transactionDetailsRepository.saveAll(detailsList);
+
         return ResponseEntity.ok(
                 new ApiResponse<>(201, "Transaction created successfully", savedTransaction)
         );
