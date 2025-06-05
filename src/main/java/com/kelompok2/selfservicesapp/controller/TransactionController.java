@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,6 +17,7 @@ import com.kelompok2.selfservicesapp.model.Customers;
 import com.kelompok2.selfservicesapp.model.Products;
 import com.kelompok2.selfservicesapp.model.TransactionDetails;
 import com.kelompok2.selfservicesapp.model.Transactions;
+import com.kelompok2.selfservicesapp.payload.ApiResponse;
 import com.kelompok2.selfservicesapp.repository.CustomerRepository;
 import com.kelompok2.selfservicesapp.repository.ProductsRepository;
 import com.kelompok2.selfservicesapp.repository.TransactionDetailsRepository;
@@ -38,18 +40,21 @@ public class TransactionController {
     private ProductsRepository productsRepository;
 
     @GetMapping
-    public List<Transactions> getAllTransactions() {
-        return transactionsRepository.findAll();
+    public ResponseEntity<ApiResponse<List<Transactions>>> getAllTransactions() {
+        List<Transactions> transactions = transactionsRepository.findAll();
+        return ResponseEntity.ok(
+                new ApiResponse<>(200, "Success", transactions)
+        );
     }
 
-
     @PostMapping("/checkout")
-    public Transactions checkout(@RequestBody CheckoutRequest request) {
-
+    public ResponseEntity<ApiResponse<Transactions>> checkout(@RequestBody CheckoutRequest request) {
         // Cari customer
         Optional<Customers> customerOpt = customerRepository.findById(request.getCustomerId());
         if (customerOpt.isEmpty()) {
-            throw new RuntimeException("Customers not found");
+            return ResponseEntity
+                    .status(404)
+                    .body(new ApiResponse<>(404, "Customer not found", null));
         }
         Customers customer = customerOpt.get();
 
@@ -62,19 +67,22 @@ public class TransactionController {
         for (CheckoutRequest.Item item : request.getItems()) {
             Optional<Products> productOpt = productsRepository.findById(item.getProductId());
             if (productOpt.isEmpty()) {
-                throw new RuntimeException("Product not found: " + item.getProductId());
+                return ResponseEntity
+                        .status(404)
+                        .body(new ApiResponse<>(404, "Product not found: " + item.getProductId(), null));
             }
             Products product = productOpt.get();
 
-            // Kurangi stock
             int updatedStock = product.getStock() - item.getQuantity();
             if (updatedStock < 0) {
-                throw new RuntimeException("Insufficient stock for product: " + product.getProductName());
+                return ResponseEntity
+                        .status(400)
+                        .body(new ApiResponse<>(400, "Insufficient stock for product: " + product.getProductName(), null));
             }
+
             product.setStock(updatedStock);
             productsRepository.save(product);
 
-            // Buat detail transaksi
             TransactionDetails detail = new TransactionDetails();
             detail.setTransaction(transaction);
             detail.setProduct(product);
@@ -83,17 +91,16 @@ public class TransactionController {
             detail.setSubtotal(subtotal);
 
             detailsList.add(detail);
-
             totalAmount += subtotal;
         }
 
         transaction.setTotalAmount(totalAmount);
         transaction.setDetails(detailsList);
 
-        // Save transaksi + details karena cascade ALL
         Transactions savedTransaction = transactionsRepository.save(transaction);
 
-        return savedTransaction;
+        return ResponseEntity.ok(
+                new ApiResponse<>(201, "Transaction created successfully", savedTransaction)
+        );
     }
-
 }
