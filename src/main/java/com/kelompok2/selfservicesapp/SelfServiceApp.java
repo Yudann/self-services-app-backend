@@ -1,6 +1,5 @@
 package com.kelompok2.selfservicesapp;
 
-
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
