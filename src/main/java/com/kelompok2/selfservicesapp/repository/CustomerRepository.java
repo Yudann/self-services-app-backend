@@ -2,7 +2,7 @@ package com.kelompok2.selfservicesapp.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.kelompok2.selfservicesapp.model.Customer;
+import com.kelompok2.selfservicesapp.model.Customers;
 
-public interface CustomerRepository extends JpaRepository<Customer, Integer> {
+public interface CustomerRepository extends JpaRepository<Customers, Integer> {
 }
