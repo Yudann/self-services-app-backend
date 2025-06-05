@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.kelompok2.selfservicesapp.model.Customer;
+import com.kelompok2.selfservicesapp.model.Customers;
 import com.kelompok2.selfservicesapp.repository.CustomerRepository;
 
 @RestController
@@ -22,17 +22,17 @@ public class CustomerController {
     private CustomerRepository customerRepository;
 
     @GetMapping
-    public List<Customer> getAllCustomers() {
+    public List<Customers> getAllCustomers() {
         return customerRepository.findAll();
     }
 
     @PostMapping
-    public Customer createCustomer(@RequestBody Customer customer) {
+    public Customers createCustomer(@RequestBody Customers customer) {
         return customerRepository.save(customer);
     }
 
     @GetMapping("/{id}")
-    public Customer getCustomerById(@PathVariable Integer id) {
+    public Customers getCustomerById(@PathVariable Integer id) {
         return customerRepository.findById(id).orElse(null);
     }
 
