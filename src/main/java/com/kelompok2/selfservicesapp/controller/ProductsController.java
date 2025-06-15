@@ -104,10 +104,6 @@ public class ProductsController {
             return ResponseEntity.status(500).body(
                 new ApiResponse<>(500, "Error saving file: " + e.getMessage(), null)
             );
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body(
-                new ApiResponse<>(500, "Error creating product: " + e.getMessage(), null)
-            );
-        }
+        } 
     }
 }
